@@ -1,0 +1,167 @@
+---
+title: 배포 가이드
+description: 팀의 git flow 기반 배포 전략
+---
+
+우리 팀은 전통적인 git flow를 기반으로 배포를 진행합니다.
+지금 하려는 배포가 어떤 종류인지 아래에서 선택하면, 해당 절차만 확인할 수 있습니다.
+
+## 어떤 배포를 하시나요?
+
+<Tabs items={['기능 배포 (정규 릴리즈)', '핫픽스 배포 (긴급 수정)']}>
+
+<Tab value="기능 배포 (정규 릴리즈)">
+
+새 기능을 개발해서 릴리즈하는 경우입니다.
+`feature → dev → release → main` 순서로 진행하고, 마지막에 **minor 버전을 올린 태그**를 작성합니다.
+
+```
+main     ──────────────────────────────────●──▶ 🏷 vX.Y.0 (minor +1)
+                                           ▲
+                                       ④ merge
+release                      ○────────○────┘
+                             ▲
+                         ③ 분기
+dev      ───●────────────●───┴──────────────────────
+            │            ▲
+        ① 분기       ② merge
+feature     └──○───○───○─┘
+```
+
+<Steps>
+
+<Step>
+
+### feature 브랜치에서 기능 개발
+
+`dev`에서 feature 브랜치를 분기하여 기능을 개발합니다.
+
+```bash
+git checkout dev && git pull
+git checkout -b feature/기능명
+```
+
+</Step>
+
+<Step>
+
+### dev로 머지
+
+개발이 끝나면 feature 브랜치를 `dev`로 머지합니다.
+
+</Step>
+
+<Step>
+
+### release 브랜치 분기
+
+릴리즈 시점이 되면 `dev`에서 release 브랜치를 분기합니다.
+
+```bash
+git checkout dev && git pull
+git checkout -b release/1.2.0
+```
+
+</Step>
+
+<Step>
+
+### main으로 머지
+
+release 브랜치를 `main`으로 머지합니다.
+
+</Step>
+
+<Step>
+
+### release tag 작성 (minor +1)
+
+`main`에서 minor 버전을 올린 태그를 작성하고 푸시하면 배포가 완료됩니다.
+
+```bash
+git checkout main && git pull
+git tag -a v1.2.0 -m "release v1.2.0"
+git push origin v1.2.0
+```
+
+</Step>
+
+</Steps>
+
+</Tab>
+
+<Tab value="핫픽스 배포 (긴급 수정)">
+
+배포된 코드에 문제가 발견되어 긴급하게 수정하는 경우입니다.
+`main → hotfix → dev(QC) → main` 순서로 진행하고, 마지막에 **patch 버전을 올린 태그**를 작성합니다.
+
+```
+main     ───●───────────────────────────●──▶ 🏷 vX.Y.Z (patch +1)
+            │                           ▲
+        ① 분기                 ③ merge (QC 통과 후)
+hotfix      └──○───○────┬───────────────┘
+                        │
+                    ② merge
+dev      ───────────────●──────── (QC 진행)
+```
+
+<Steps>
+
+<Step>
+
+### hotfix 브랜치에서 수정
+
+`main`에서 hotfix 브랜치를 분기하여 수정합니다.
+
+```bash
+git checkout main && git pull
+git checkout -b hotfix/1.2.1
+```
+
+</Step>
+
+<Step>
+
+### dev로 머지하고 QC 진행
+
+수정 내용을 `dev`로 머지하고 QC를 진행합니다.
+
+</Step>
+
+<Step>
+
+### QC 통과 후 main으로 머지
+
+QC를 통과하면 hotfix 브랜치를 `main`으로 머지합니다.
+
+</Step>
+
+<Step>
+
+### release tag 작성 (patch +1)
+
+`main`에서 patch 버전을 올린 태그를 작성하고 푸시하면 배포가 완료됩니다.
+
+```bash
+git checkout main && git pull
+git tag -a v1.2.1 -m "hotfix v1.2.1"
+git push origin v1.2.1
+```
+
+</Step>
+
+</Steps>
+
+</Tab>
+
+</Tabs>
+
+## 참고: 브랜치 구조
+
+| 브랜치 | 역할 |
+| --- | --- |
+| `main` | 배포 기준 브랜치입니다. release tag를 여기서 작성합니다 |
+| `dev` | 개발 통합 브랜치입니다 |
+| `feature/*` | 기능 개발용 브랜치입니다 (`dev`에서 분기합니다) |
+| `release/*` | 릴리즈 준비용 브랜치입니다 (`dev`에서 분기합니다) |
+| `hotfix/x.y.z` | 긴급 수정용 브랜치입니다 (`main`에서 분기합니다) |
