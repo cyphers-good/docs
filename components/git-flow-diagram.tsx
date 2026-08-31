@@ -1,6 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Check, ChevronLeft, ChevronRight, Pause, Play, RotateCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const COLORS = {
   main: '#e5484d',
@@ -238,68 +241,41 @@ export function GitFlowDiagram({ flow }: { flow: FlowType }) {
     setStep(Math.max(0, Math.min(maxStep, next)));
   };
 
-  const btnStyle: React.CSSProperties = {
-    padding: '4px 12px',
-    borderRadius: 8,
-    border: '1px solid var(--color-fd-border, #ddd)',
-    background: 'var(--color-fd-secondary, transparent)',
-    color: 'var(--color-fd-foreground, inherit)',
-    fontSize: 13,
-    cursor: 'pointer',
-  };
-
   return (
-    <div
-      style={{
-        border: '1px solid var(--color-fd-border, #ddd)',
-        borderRadius: 12,
-        background: 'var(--color-fd-card, transparent)',
-        padding: 16,
-        margin: '16px 0',
-      }}
-    >
+    <div className="not-prose my-6 rounded-xl border bg-card p-4 shadow-sm">
       {flow === 'release' ? <ReleaseScene step={step} /> : <HotfixScene step={step} />}
 
       {/* 단계 패널: 현재 진행 중인 줄이 강조됩니다 */}
-      <ol style={{ listStyle: 'none', margin: '12px 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <ol className="mt-3 flex list-none flex-col gap-1 p-0">
         {steps.map((s, i) => {
           const idx = i + 1;
           const state = idx === step ? 'current' : idx < step ? 'done' : 'todo';
           return (
-            <li key={idx} style={{ margin: 0, padding: 0 }}>
+            <li key={idx} className="m-0 p-0">
               <button
                 type="button"
                 onClick={() => goTo(idx)}
-                style={{
-                  display: 'flex',
-                  gap: 10,
-                  alignItems: 'baseline',
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '7px 12px',
-                  borderRadius: 8,
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: state === 'current' ? 'var(--color-fd-primary\/10, rgba(120,120,255,0.08))' : 'transparent',
-                  boxShadow: state === 'current' ? 'inset 3px 0 0 var(--color-fd-primary, #6366f1)' : 'none',
-                  opacity: state === 'todo' ? 0.45 : 1,
-                  transition: 'opacity 0.3s ease, background 0.3s ease',
-                  color: 'var(--color-fd-foreground, inherit)',
-                }}
+                className={cn(
+                  'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-accent/60',
+                  state === 'current' && 'bg-accent text-accent-foreground',
+                  state === 'todo' && 'opacity-50',
+                )}
               >
                 <span
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 12,
-                    color: state === 'done' ? 'var(--color-fd-muted-foreground, #888)' : 'var(--color-fd-primary, #6366f1)',
-                    minWidth: 44,
-                  }}
+                  className={cn(
+                    'flex size-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold',
+                    state === 'current' && 'border-primary bg-primary text-primary-foreground',
+                    state === 'done' && 'border-transparent bg-muted text-muted-foreground',
+                    state === 'todo' && 'border-border text-muted-foreground',
+                  )}
                 >
-                  {state === 'done' ? '✓' : ''} STEP {idx}
+                  {state === 'done' ? <Check className="size-3" /> : idx}
                 </span>
-                <span style={{ fontSize: 13.5 }}>
-                  <strong>{s.title}</strong>
-                  {state === 'current' ? <span style={{ color: 'var(--color-fd-muted-foreground, #888)' }}> · {s.desc}</span> : null}
+                <span className="flex min-w-0 flex-col">
+                  <span className="font-medium">{s.title}</span>
+                  {state === 'current' ? (
+                    <span className="text-[13px] text-muted-foreground">{s.desc}</span>
+                  ) : null}
                 </span>
               </button>
             </li>
@@ -307,13 +283,28 @@ export function GitFlowDiagram({ flow }: { flow: FlowType }) {
         })}
       </ol>
 
-      <div style={{ display: 'flex', gap: 8, marginTop: 12, alignItems: 'center' }}>
-        <button type="button" style={btnStyle} onClick={() => goTo(0)}>처음부터</button>
-        <button type="button" style={btnStyle} onClick={() => goTo(step - 1)} disabled={step === 0}>◀ 이전</button>
-        <button type="button" style={btnStyle} onClick={() => goTo(step + 1)} disabled={step === maxStep}>다음 ▶</button>
-        <button
-          type="button"
-          style={{ ...btnStyle, fontWeight: 600 }}
+      <div className="mt-4 flex flex-wrap items-center gap-2 border-t pt-4">
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-8"
+          aria-label="처음부터"
+          onClick={() => goTo(0)}
+          disabled={step === 0}
+        >
+          <RotateCcw />
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => goTo(step - 1)} disabled={step === 0}>
+          <ChevronLeft />
+          이전
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => goTo(step + 1)} disabled={step === maxStep}>
+          다음
+          <ChevronRight />
+        </Button>
+        <Button
+          size="sm"
+          className="ml-1"
           onClick={() => {
             if (playing) {
               stop();
@@ -323,9 +314,10 @@ export function GitFlowDiagram({ flow }: { flow: FlowType }) {
             }
           }}
         >
-          {playing ? '⏸ 일시정지' : '▶ 자동 재생'}
-        </button>
-        <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--color-fd-muted-foreground, #888)' }}>
+          {playing ? <Pause /> : <Play />}
+          {playing ? '일시정지' : '자동 재생'}
+        </Button>
+        <span className="ml-auto font-mono text-xs tabular-nums text-muted-foreground">
           {step} / {maxStep}
         </span>
       </div>
