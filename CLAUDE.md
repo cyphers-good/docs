@@ -13,6 +13,16 @@ npm run dev        # 로컬 개발 서버 (http://localhost:3000)
 npm run build      # 정적 빌드 (out/) — 변경 후 반드시 빌드가 통과하는지 확인할 것
 ```
 
+## 프로젝트 스킬
+
+이 저장소에는 다음 두 가지 프로젝트 스킬이 있다. 해당 작업을 할 때 반드시 스킬 본문을 먼저 읽고 따른다.
+
+- **doc-writing** (`.claude/skills/doc-writing/SKILL.md`): 문서를 추가·수정하는 모든 작업에 사용한다.
+  문서 구조(탭, 단계, 표) 선택 기준과, 흐름이 복잡할 때 애니메이션 도식을 사용하는 기준을 담고 있다.
+- **animated-diagram** (`.claude/skills/animated-diagram/SKILL.md`): 단계별 애니메이션 도식을
+  만들거나 수정할 때 사용한다. 기준 구현(`components/git-flow-diagram.tsx`) 재사용 방법과
+  좌표·색상 규칙, 검증 절차를 담고 있다.
+
 ## 문서 유지 규칙
 
 - 문서는 `content/docs/*.mdx` 에 작성한다. frontmatter에 `title`, `description` 필수.
